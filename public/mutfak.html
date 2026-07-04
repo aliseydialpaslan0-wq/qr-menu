@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutfak Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f0f0f; color: #fff; min-height: 100vh; padding: 20px; }
+        .giris-ekrani { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        .giris-kart { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 24px; padding: 40px 32px; width: 100%; max-width: 360px; text-align: center; }
+        .giris-kart .logo { font-size: 48px; margin-bottom: 16px; }
+        .giris-kart h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .giris-kart p { font-size: 13px; color: #555; margin-bottom: 28px; }
+        .giris-input { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px 16px; color: #fff; font-size: 16px; font-family: 'Inter', sans-serif; outline: none; text-align: center; letter-spacing: 4px; margin-bottom: 16px; }
+        .giris-input:focus { border-color: #e8a838; }
+        .giris-btn { width: 100%; background: #e8a838; color: #0f0f0f; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+        .hata { color: #e55; font-size: 13px; margin-top: 12px; display: none; }
+        .panel { display: none; }
+        header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #1f1f1f; }
+        header h1 { font-size: 20px; font-weight: 700; }
+        header p { font-size: 12px; color: #555; margin-top: 2px; }
+        .badge { background: #e55; color: #fff; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 50px; }
+        .cikis-btn { background: #1a1a1a; color: #666; border: 1px solid #2a2a2a; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; margin-left: 8px; }
+        #siparisler { display: flex; flex-direction: column; gap: 12px; }
+        .bos { text-align: center; color: #333; font-size: 14px; margin-top: 60px; }
+        .bos span { display: block; font-size: 40px; margin-bottom: 10px; }
+        .siparis-kart { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 18px; animation: giris 0.3s ease; border-left: 4px solid #e8a838; }
+        @keyframes giris { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .siparis-ust { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .siparis-masa { font-size: 16px; font-weight: 700; color: #e8a838; }
+        .siparis-saat { font-size: 11px; color: #444; }
+        .siparis-urunler { background: #111; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+        .siparis-urun { font-size: 14px; color: #ccc; padding: 4px 0; border-bottom: 1px solid #1a1a1a; }
+        .siparis-urun:last-child { border-bottom: none; }
+        .siparis-toplam { font-size: 14px; font-weight: 700; color: #e8a838; margin-top: 8px; }
+        .hazir-btn { width: 100%; padding: 12px; background: #1e2e1e; color: #4caf50; border: 1px solid #2d4a2d; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; }
+        .hazir-btn:hover { background: #253e25; }
+    </style>
+</head>
+<body>
+
+<div class="giris-ekrani" id="girisEkrani">
+    <div class="giris-kart">
+        <div class="logo">👨‍🍳</div>
+        <h2>Mutfak Girişi</h2>
+        <p>Devam etmek için şifreyi girin</p>
+        <input class="giris-input" type="password" id="sifreInput" placeholder="••••••" onkeydown="if(event.key==='Enter') girisYap()">
+        <button class="giris-btn" onclick="girisYap()">Giriş Yap</button>
+        <div class="hata" id="hata">❌ Şifre yanlış, tekrar deneyin</div>
+    </div>
+</div>
+
+<div class="panel" id="panel">
+    <header>
+        <div>
+            <h1>👨‍🍳 Mutfak Paneli</h1>
+            <p>Bekleyen siparişler</p>
+        </div>
+        <div style="display:flex;align-items:center;">
+            <div class="badge" id="sayac">0</div>
+            <button class="cikis-btn" onclick="cikis()">Çıkış</button>
+        </div>
+    </header>
+    <div id="siparisler">
+        <div class="bos"><span>🍳</span>Bekleyen sipariş yok</div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var SIFRE = '1234';
+    var sayac = 0;
+    var socket = io();
+
+    function girisYap() {
+        var girilen = document.getElementById('sifreInput').value;
+        if (girilen === SIFRE) {
+            document.getElementById('girisEkrani').style.display = 'none';
+            document.getElementById('panel').style.display = 'block';
+            gecmisSiparisleriYukle();
+        } else {
+            document.getElementById('hata').style.display = 'block';
+            document.getElementById('sifreInput').value = '';
+        }
+    }
+
+    function gecmisSiparisleriYukle() {
+        fetch('/api/son-bildirimler')
+            .then(function(r) { return r.json(); })
+            .then(function(bildirimler) {
+                bildirimler.forEach(function(data) {
+                    if (data.mesaj === 'Sipariş Verdi') {
+                        siparisEkle(data, true);
+                    }
+                });
+            });
+    }
+
+    function cikis() {
+        document.getElementById('panel').style.display = 'none';
+        document.getElementById('girisEkrani').style.display = 'flex';
+        document.getElementById('sifreInput').value = '';
+        document.getElementById('hata').style.display = 'none';
+        sayac = 0;
+        document.getElementById('sayac').textContent = '0';
+        document.getElementById('siparisler').innerHTML = '<div class="bos"><span>🍳</span>Bekleyen sipariş yok</div>';
+    }
+
+    socket.on('yeni-bildirim', function(data) {
+        if (data.mesaj === 'Sipariş Verdi') {
+            siparisEkle(data, false);
+            if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+            try {
+                var ctx = new AudioContext();
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.frequency.setValueAtTime(660, ctx.currentTime);
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+            } catch(e) {}
+        }
+    });
+
+    function siparisEkle(data, gecmis) {
+        var div = document.getElementById('siparisler');
+        if (div.querySelector('.bos')) div.innerHTML = '';
+
+        sayac++;
+        document.getElementById('sayac').textContent = sayac;
+
+        var saat = data.saat || new Date().toLocaleTimeString('tr-TR');
+        var id = 's' + Date.now() + Math.random();
+
+        var urunlerHTML = '';
+        if (data.sepet && data.sepet.length > 0) {
+            data.sepet.forEach(function(satir) {
+                urunlerHTML += '<div class="siparis-urun">🍽️ ' + satir + '</div>';
+            });
+        }
+
+        var kart = document.createElement('div');
+        kart.className = 'siparis-kart';
+        kart.id = id;
+        if (gecmis) kart.style.opacity = '0.6';
+        kart.innerHTML =
+            '<div class="siparis-ust">' +
+                '<div class="siparis-masa">' + data.masa + (gecmis ? ' <span style="font-size:10px;color:#444">(geçmiş)</span>' : '') + '</div>' +
+                '<div class="siparis-saat">' + saat + '</div>' +
+            '</div>' +
+            '<div class="siparis-urunler">' + urunlerHTML +
+                '<div class="siparis-toplam">Toplam: ' + data.toplam + ' ₺</div>' +
+            '</div>' +
+            '<button class="hazir-btn" onclick="hazir(\'' + id + '\', \'' + data.masa + '\')">✅ Hazırlandı - Sipariş Götürülmeye Hazır</button>';
+
+        div.prepend(kart);
+    }
+
+    function hazir(id, masa) {
+        socket.emit('masa-bildirimi', { masa: masa, mesaj: 'Sipariş Götürülmeye Hazır', sepet: [], toplam: 0 });
+        var el = document.getElementById(id);
+        if (el) {
+            el.style.opacity = '0';
+            el.style.transition = 'opacity 0.3s';
+            setTimeout(function() {
+                el.remove();
+                sayac = Math.max(0, sayac - 1);
+                document.getElementById('sayac').textContent = sayac;
+                if (document.getElementById('siparisler').children.length === 0) {
+                    document.getElementById('siparisler').innerHTML = '<div class="bos"><span>🍳</span>Bekleyen sipariş yok</div>';
+                }
+            }, 300);
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        /* GİRİŞ EKRANI */
+        .giris-ekrani {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .giris-kart {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 24px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+        .giris-kart .logo { font-size: 48px; margin-bottom: 16px; }
+        .giris-kart h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .giris-kart p { font-size: 13px; color: #555; margin-bottom: 28px; }
+        .giris-input {
+            width: 100%;
+            background: #111;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            text-align: center;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+        }
+        .giris-input:focus { border-color: #e8a838; }
+        .giris-btn {
+            width: 100%;
+            background: #e8a838;
+            color: #0f0f0f;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .hata {
+            color: #e55;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        /* ADMIN PANEL */
+        .admin-panel { display: none; }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #1f1f1f;
+        }
+        header h1 { font-size: 22px; font-weight: 700; }
+        header p { font-size: 13px; color: #555; margin-top: 2px; }
+        .header-btns { display: flex; gap: 10px; }
+        .kaydet-btn {
+            background: #e8a838;
+            color: #0f0f0f;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .cikis-btn {
+            background: #1a1a1a;
+            color: #666;
+            border: 1px solid #2a2a2a;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .kategori-ekle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+        .input:focus { border-color: #e8a838; }
+        .ekle-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #e8a838;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+        .kategori-kart {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .kategori-baslik {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .kategori-adi { font-size: 16px; font-weight: 700; color: #e8a838; }
+        .sil-btn {
+            background: none;
+            border: 1px solid #3a1a1a;
+            color: #e55;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .urun-listesi { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .urun-satir {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #111;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        .urun-satir span { flex: 1; font-size: 13px; color: #ccc; }
+        .urun-satir .fiyat { color: #e8a838; font-weight: 600; white-space: nowrap; }
+        .urun-ekle-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 80px auto;
+            gap: 8px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #222;
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid #333;
+            transition: transform 0.3s ease;
+            white-space: nowrap;
+            z-index: 200;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- GİRİŞ EKRANI -->
+<div class="giris-ekrani" id="girisEkrani">
+    <div class="giris-kart">
+        <div class="logo">🔐</div>
+        <h2>Admin Girişi</h2>
+        <p>Devam etmek için şifreyi girin</p>
+        <input class="giris-input" type="password" id="sifreInput" placeholder="••••••" onkeydown="if(event.key==='Enter') girisYap()">
+        <button class="giris-btn" onclick="girisYap()">Giriş Yap</button>
+        <div class="hata" id="hata">❌ Şifre yanlış, tekrar deneyin</div>
+    </div>
+</div>
+
+<!-- ADMIN PANELİ -->
+<div class="admin-panel" id="adminPanel">
+    <header>
+        <div>
+            <h1>⚙️ Admin Paneli</h1>
+            <p>Menüyü buradan düzenleyebilirsiniz</p>
+        </div>
+        <div class="header-btns">
+            <button class="kaydet-btn" onclick="kaydet()">💾 Kaydet</button>
+            <button class="cikis-btn" onclick="cikis()">Çıkış</button>
+        </div>
+    </header>
+
+    <div class="kategori-ekle">
+        <input class="input" id="yeniKat" placeholder="Yeni kategori adı (örn: 🍔 Burgerler)">
+        <button class="ekle-btn" onclick="kategoriEkle()">+ Kategori Ekle</button>
+    </div>
+
+    <div id="kategoriler"></div>
+</div>
+
+<div class="toast" id="toast">✅ Menü kaydedildi!</div>
+
+<script>
+    // ŞİFREYİ BURADAN DEĞİŞTİREBİLİRSİN
+    var SIFRE = '333333';
+
+    var menu = {};
+
+    function girisYap() {
+        var girilen = document.getElementById('sifreInput').value;
+        if (girilen === SIFRE) {
+            document.getElementById('girisEkrani').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            menuYukle();
+        } else {
+            document.getElementById('hata').style.display = 'block';
+            document.getElementById('sifreInput').value = '';
+        }
+    }
+
+    function cikis() {
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('girisEkrani').style.display = 'flex';
+        document.getElementById('sifreInput').value = '';
+        document.getElementById('hata').style.display = 'none';
+    }
+
+    function menuYukle() {
+        fetch('/api/menu')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                menu = data;
+                render();
+            });
+    }
+
+    function render() {
+        var div = document.getElementById('kategoriler');
+        div.innerHTML = '';
+        Object.keys(menu).forEach(function(kat) {
+            var kart = document.createElement('div');
+            kart.className = 'kategori-kart';
+            var urunlerHTML = '';
+            menu[kat].forEach(function(urun, i) {
+                urunlerHTML +=
+                    '<div class="urun-satir">' +
+                        '<span>' + urun.ad + ' - ' + urun.aciklama + '</span>' +
+                        '<span class="fiyat">' + urun.fiyat + '</span>' +
+                        '<button class="sil-btn" onclick="urunSil(\'' + kat + '\',' + i + ')">Sil</button>' +
+                    '</div>';
+            });
+            kart.innerHTML =
+                '<div class="kategori-baslik">' +
+                    '<div class="kategori-adi">' + kat + '</div>' +
+                    '<button class="sil-btn" onclick="kategoriSil(\'' + kat + '\')">Kategoriyi Sil</button>' +
+                '</div>' +
+                '<div class="urun-listesi">' + urunlerHTML + '</div>' +
+                '<div class="urun-ekle-form">' +
+                    '<input class="input" id="ad_' + kat + '" placeholder="Ürün adı">' +
+                    '<input class="input" id="ac_' + kat + '" placeholder="Açıklama">' +
+                    '<input class="input" id="fi_' + kat + '" placeholder="Fiyat">' +
+                    '<button class="ekle-btn" onclick="urunEkle(\'' + kat + '\')">+ Ekle</button>' +
+                '</div>';
+            div.appendChild(kart);
+        });
+    }
+
+    function kategoriEkle() {
+        var ad = document.getElementById('yeniKat').value.trim();
+        if (!ad) return;
+        if (menu[ad]) { alert('Bu kategori zaten var!'); return; }
+        menu[ad] = [];
+        document.getElementById('yeniKat').value = '';
+        render();
+    }
+
+    function kategoriSil(kat) {
+        if (!confirm(kat + ' kategorisini silmek istediğinizden emin misiniz?')) return;
+        delete menu[kat];
+        render();
+    }
+
+    function urunEkle(kat) {
+        var ad = document.getElementById('ad_' + kat).value.trim();
+        var ac = document.getElementById('ac_' + kat).value.trim();
+        var fi = document.getElementById('fi_' + kat).value.trim();
+        if (!ad || !fi) { alert('Ürün adı ve fiyat zorunlu!'); return; }
+        menu[kat].push({ ad: ad, aciklama: ac, fiyat: fi });
+        render();
+    }
+
+    function urunSil(kat, i) {
+        menu[kat].splice(i, 1);
+        render();
+    }
+
+    function kaydet() {
+        fetch('/api/menu', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(menu)
+        }).then(function() {
+            var toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 2500);
+        });
+    }
+</script>
+
+</body>
+</html>

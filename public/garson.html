@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garson Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f0f0f; color: #fff; min-height: 100vh; padding: 20px; }
+        .giris-ekrani { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        .giris-kart { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 24px; padding: 40px 32px; width: 100%; max-width: 360px; text-align: center; }
+        .giris-kart .logo { font-size: 48px; margin-bottom: 16px; }
+        .giris-kart h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .giris-kart p { font-size: 13px; color: #555; margin-bottom: 28px; }
+        .giris-input { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px 16px; color: #fff; font-size: 16px; font-family: 'Inter', sans-serif; outline: none; text-align: center; letter-spacing: 4px; margin-bottom: 16px; }
+        .giris-input:focus { border-color: #e8a838; }
+        .giris-btn { width: 100%; background: #e8a838; color: #0f0f0f; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+        .hata { color: #e55; font-size: 13px; margin-top: 12px; display: none; }
+        .panel { display: none; }
+        header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #1f1f1f; }
+        header h1 { font-size: 20px; font-weight: 700; }
+        header p { font-size: 12px; color: #555; margin-top: 2px; }
+        .badge { background: #e8a838; color: #0f0f0f; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 50px; }
+        .cikis-btn { background: #1a1a1a; color: #666; border: 1px solid #2a2a2a; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; margin-left: 8px; }
+        #bildirimler { display: flex; flex-direction: column; gap: 10px; }
+        .bos { text-align: center; color: #333; font-size: 14px; margin-top: 60px; }
+        .bos span { display: block; font-size: 40px; margin-bottom: 10px; }
+        .bildirim { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 14px; padding: 16px; animation: giris 0.3s ease; }
+        .bildirim.garson { border-left: 4px solid #e8a838; }
+        .bildirim.nakit { border-left: 4px solid #4caf50; }
+        .bildirim.kart { border-left: 4px solid #7c9fd4; }
+        @keyframes giris { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .bildirim-ust { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .bildirim-masa { font-size: 16px; font-weight: 700; }
+        .bildirim-saat { font-size: 11px; color: #444; }
+        .bildirim-mesaj { font-size: 13px; color: #888; margin-bottom: 8px; }
+        .bildirim-sepet { background: #111; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+        .bildirim-sepet-satir { font-size: 12px; color: #777; padding: 2px 0; }
+        .bildirim-toplam { font-size: 14px; font-weight: 700; color: #e8a838; margin-top: 6px; }
+        .tamam-btn { width: 100%; padding: 10px; background: #1e2e1e; color: #4caf50; border: 1px solid #2d4a2d; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="giris-ekrani" id="girisEkrani">
+    <div class="giris-kart">
+        <div class="logo">👨‍🍳</div>
+        <h2>Garson Girişi</h2>
+        <p>Devam etmek için şifreyi girin</p>
+        <input class="giris-input" type="password" id="sifreInput" placeholder="••••••" onkeydown="if(event.key==='Enter') girisYap()">
+        <button class="giris-btn" onclick="girisYap()">Giriş Yap</button>
+        <div class="hata" id="hata">❌ Şifre yanlış, tekrar deneyin</div>
+    </div>
+</div>
+
+<div class="panel" id="panel">
+    <header>
+        <div>
+            <h1>👨‍🍳 Garson Paneli</h1>
+            <p>Anlık masa talepleri</p>
+        </div>
+        <div style="display:flex;align-items:center;">
+            <div class="badge" id="sayac">0</div>
+            <button class="cikis-btn" onclick="cikis()">Çıkış</button>
+        </div>
+    </header>
+    <div id="bildirimler">
+        <div class="bos"><span>🛎️</span>Bekleyen talep yok</div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var SIFRE = '1234';
+    var sayac = 0;
+    var socket = io();
+
+    function girisYap() {
+        var girilen = document.getElementById('sifreInput').value;
+        if (girilen === SIFRE) {
+            document.getElementById('girisEkrani').style.display = 'none';
+            document.getElementById('panel').style.display = 'block';
+            gecmisBildirimleriYukle();
+        } else {
+            document.getElementById('hata').style.display = 'block';
+            document.getElementById('sifreInput').value = '';
+        }
+    }
+
+    function gecmisBildirimleriYukle() {
+        fetch('/api/son-bildirimler')
+            .then(function(r) { return r.json(); })
+            .then(function(bildirimler) {
+                bildirimler.forEach(function(data) { bildirimEkle(data, true); });
+            });
+    }
+
+    function cikis() {
+        document.getElementById('panel').style.display = 'none';
+        document.getElementById('girisEkrani').style.display = 'flex';
+        document.getElementById('sifreInput').value = '';
+        document.getElementById('hata').style.display = 'none';
+        sayac = 0;
+        document.getElementById('sayac').textContent = '0';
+        document.getElementById('bildirimler').innerHTML = '<div class="bos"><span>🛎️</span>Bekleyen talep yok</div>';
+    }
+
+    socket.on('yeni-bildirim', function(data) {
+        bildirimEkle(data, false);
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        try {
+            var ctx = new AudioContext();
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
+        } catch(e) {}
+    });
+
+    function bildirimEkle(data, gecmis) {
+        var div = document.getElementById('bildirimler');
+        if (div.querySelector('.bos')) div.innerHTML = '';
+        sayac++;
+        document.getElementById('sayac').textContent = sayac;
+
+        var saat = data.saat || new Date().toLocaleTimeString('tr-TR');
+        var tip = 'garson'; var ikon = '🔔';
+        if (data.mesaj.includes('Nakit')) { tip = 'nakit'; ikon = '💵'; }
+        else if (data.mesaj.includes('Kart')) { tip = 'kart'; ikon = '💳'; }
+
+        var sepetHTML = '';
+        if (data.sepet && data.sepet.length > 0) {
+            sepetHTML = '<div class="bildirim-sepet">';
+            data.sepet.forEach(function(satir) {
+                sepetHTML += '<div class="bildirim-sepet-satir">• ' + satir + '</div>';
+            });
+            sepetHTML += '<div class="bildirim-toplam">Toplam: ' + data.toplam + ' ₺</div>';
+            sepetHTML += '</div>';
+        }
+
+        var id = 'b' + Date.now() + Math.random();
+        var item = document.createElement('div');
+        item.className = 'bildirim ' + tip;
+        item.id = id;
+        if (gecmis) item.style.opacity = '0.6';
+        item.innerHTML =
+            '<div class="bildirim-ust">' +
+                '<div class="bildirim-masa">' + ikon + ' ' + data.masa + (gecmis ? ' <span style="font-size:10px;color:#444">(geçmiş)</span>' : '') + '</div>' +
+                '<div class="bildirim-saat">' + saat + '</div>' +
+            '</div>' +
+            '<div class="bildirim-mesaj">' + data.mesaj + '</div>' +
+            sepetHTML +
+            '<button class="tamam-btn" onclick="tamam(\'' + id + '\')">✅ Tamam, gidiyorum</button>';
+        div.appendChild(item);
+    }
+
+    function tamam(id) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.style.opacity = '0';
+            el.style.transition = 'opacity 0.3s';
+            setTimeout(function() {
+                el.remove();
+                sayac = Math.max(0, sayac - 1);
+                document.getElementById('sayac').textContent = sayac;
+                if (document.getElementById('bildirimler').children.length === 0) {
+                    document.getElementById('bildirimler').innerHTML = '<div class="bos"><span>🛎️</span>Bekleyen talep yok</div>';
+                }
+            }, 300);
+        }
+    }
+</script>
+
+</body>
+</html>

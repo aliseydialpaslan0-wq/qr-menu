@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Menü</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#e8a838">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="QR Menü">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #0f0f0f; color: #fff; padding: 24px; padding-bottom: 120px; }
+        .header { text-align: center; padding: 32px 0 24px; }
+        .header .logo { font-size: 48px; }
+        .header .masa-adi { font-size: 13px; font-weight: 600; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px; }
+        .header .masa-no { font-size: 36px; font-weight: 700; color: #fff; }
+        .divider { width: 40px; height: 2px; background: #e8a838; margin: 16px auto; border-radius: 2px; }
+        .garson-btn { width: 100%; padding: 14px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; color: #e8a838; font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .sekme-bar { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
+        .sekme { padding: 8px 18px; border-radius: 50px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #666; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+        .sekme.aktif { background: #e8a838; color: #0f0f0f; border-color: #e8a838; }
+        .menu-listesi { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .menu-item { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .menu-item-sol { flex: 1; }
+        .menu-item-ad { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+        .menu-item-aciklama { font-size: 12px; color: #555; }
+        .menu-item-sag { display: flex; align-items: center; gap: 12px; }
+        .menu-item-fiyat { font-size: 16px; font-weight: 700; color: #e8a838; white-space: nowrap; }
+        .ekle-btn { background: #e8a838; color: #0f0f0f; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+        .sepet-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; border-top: 1px solid #2a2a2a; padding: 16px 24px; display: none; }
+        .sepet-bar.goster { display: block; }
+        .sepet-ozet { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .sepet-adet { font-size: 13px; color: #888; }
+        .sepet-toplam { font-size: 18px; font-weight: 700; color: #e8a838; }
+        .sepet-goster-btn { width: 100%; padding: 14px; background: #e8a838; color: #0f0f0f; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 50; display: none; align-items: flex-end; }
+        .modal-overlay.goster { display: flex; }
+        .modal { background: #1a1a1a; border-radius: 24px 24px 0 0; padding: 24px; width: 100%; max-height: 80vh; overflow-y: auto; }
+        .modal-baslik { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .kapat-btn { background: #111; border: none; color: #666; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; }
+        .sepet-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222; }
+        .sepet-item-ad { font-size: 14px; font-weight: 600; }
+        .sepet-item-fiyat { font-size: 13px; color: #e8a838; margin-top: 2px; }
+        .adet-kontrol { display: flex; align-items: center; gap: 12px; }
+        .adet-btn { background: #222; border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .adet-sayi { font-size: 15px; font-weight: 700; min-width: 20px; text-align: center; }
+        .modal-toplam { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; font-size: 16px; font-weight: 700; }
+        .modal-toplam span:last-child { color: #e8a838; font-size: 20px; }
+        .hesap-butonlar { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-siparis { background: #e8a838; color: #0f0f0f; }
+        .btn-nakit { background: #1e2e1e; color: #4caf50; border: 1px solid #2d4a2d; }
+        .btn-kart { background: #1a1e2e; color: #7c9fd4; border: 1px solid #2a3050; }
+        .afiyet-overlay { position: fixed; inset: 0; background: #0f0f0f; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        .afiyet-overlay.aktif { opacity: 1; pointer-events: all; }
+        .afiyet-emoji { font-size: 80px; animation: sallan 1s ease infinite alternate; margin-bottom: 24px; }
+        @keyframes sallan { from { transform: rotate(-10deg) scale(1); } to { transform: rotate(10deg) scale(1.1); } }
+        .afiyet-baslik { font-size: 36px; font-weight: 700; color: #e8a838; margin-bottom: 12px; }
+        .afiyet-alt { font-size: 16px; color: #555; }
+        .siparis-overlay { position: fixed; inset: 0; background: #0f0f0f; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        .siparis-overlay.aktif { opacity: 1; pointer-events: all; }
+        .siparis-emoji { font-size: 80px; margin-bottom: 24px; animation: sallan 1s ease infinite alternate; }
+        .siparis-baslik { font-size: 32px; font-weight: 700; color: #e8a838; margin-bottom: 12px; }
+        .siparis-alt { font-size: 16px; color: #555; }
+        .anket-overlay { position: fixed; inset: 0; background: #0f0f0f; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 110; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; padding: 24px; }
+        .anket-overlay.aktif { opacity: 1; pointer-events: all; }
+        .anket-baslik { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 8px; text-align: center; }
+        .anket-alt { font-size: 14px; color: #555; margin-bottom: 32px; text-align: center; }
+        .yildizlar { display: flex; gap: 12px; margin-bottom: 32px; }
+        .yildiz { font-size: 48px; cursor: pointer; opacity: 0.3; transition: opacity 0.2s, transform 0.2s; }
+        .yildiz.aktif { opacity: 1; transform: scale(1.2); }
+        .anket-gonder-btn { padding: 16px 40px; background: #e8a838; color: #0f0f0f; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+        .anket-atla { margin-top: 16px; font-size: 13px; color: #444; cursor: pointer; }
+        .konfeti { position: fixed; border-radius: 2px; animation: dus 2s ease forwards; z-index: 101; }
+        @keyframes dus { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(200px); background: #222; color: #fff; padding: 14px 28px; border-radius: 50px; font-size: 14px; font-weight: 600; border: 1px solid #333; transition: transform 0.3s ease; white-space: nowrap; z-index: 200; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">🍽️</div>
+    <div class="masa-adi">Masa</div>
+    <div class="masa-no" id="masaNo">1</div>
+    <div class="divider"></div>
+</div>
+
+<button class="garson-btn" id="btnGarson">🔔 Garson Çağır</button>
+
+<div class="sekme-bar" id="sekmeler"></div>
+<div class="menu-listesi" id="menuListesi"></div>
+
+<div class="sepet-bar" id="sepetBar">
+    <div class="sepet-ozet">
+        <div class="sepet-adet" id="sepetAdet">0 ürün</div>
+        <div class="sepet-toplam" id="sepetToplam">0 ₺</div>
+    </div>
+    <button class="sepet-goster-btn" onclick="sepetAc()">🛒 Sepeti Gör</button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-baslik">
+            <span>🛒 Sepetim</span>
+            <button class="kapat-btn" onclick="sepetKapat()">✕</button>
+        </div>
+        <div id="sepetIcerik"></div>
+        <div class="modal-toplam">
+            <span>Toplam</span>
+            <span id="modalToplam">0 ₺</span>
+        </div>
+        <div class="hesap-butonlar">
+            <button class="btn btn-siparis" id="btnSiparis">🍕 Sipariş Ver</button>
+            <button class="btn btn-nakit" id="btnNakit">💵 Hesap İste (Nakit)</button>
+            <button class="btn btn-kart" id="btnKart">💳 Hesap İste (Kart)</button>
+        </div>
+    </div>
+</div>
+
+<div class="afiyet-overlay" id="afiyetOverlay">
+    <div class="afiyet-emoji">🍴</div>
+    <div class="afiyet-baslik">Afiyet Olsun!</div>
+    <div class="afiyet-alt">Hesabınız hazırlanıyor, teşekkür ederiz 🙏</div>
+</div>
+
+<div class="siparis-overlay" id="siparisOverlay">
+    <div class="siparis-emoji">👨‍🍳</div>
+    <div class="siparis-baslik">Siparişiniz Alındı!</div>
+    <div class="siparis-alt">En kısa sürede hazırlanacak 🙏</div>
+</div>
+
+<div class="anket-overlay" id="anketOverlay">
+    <div class="anket-baslik">Deneyiminizi Değerlendirin</div>
+    <div class="anket-alt">Görüşleriniz bizim için çok değerli 💛</div>
+    <div class="yildizlar" id="yildizlar">
+        <span class="yildiz" onclick="yildizSec(1)">⭐</span>
+        <span class="yildiz" onclick="yildizSec(2)">⭐</span>
+        <span class="yildiz" onclick="yildizSec(3)">⭐</span>
+        <span class="yildiz" onclick="yildizSec(4)">⭐</span>
+        <span class="yildiz" onclick="yildizSec(5)">⭐</span>
+    </div>
+    <button class="anket-gonder-btn" onclick="anketGonder()">Gönder</button>
+    <div class="anket-atla" onclick="anketKapat()">Atla</div>
+</div>
+
+<div class="toast" id="toast">✅ Garson çağrıldı!</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var params = new URLSearchParams(window.location.search);
+    var masaNo = params.get('masa') || '1';
+    document.getElementById('masaNo').textContent = masaNo;
+
+    var socket = io();
+    var menu = {};
+    var sepet = {};
+    var seciliYildiz = 0;
+
+    function menuRender(data) {
+        menu = data;
+        var kategoriler = Object.keys(menu);
+        var sekmelerDiv = document.getElementById('sekmeler');
+        sekmelerDiv.innerHTML = '';
+        kategoriler.forEach(function(kat, i) {
+            var btn = document.createElement('button');
+            btn.className = 'sekme' + (i === 0 ? ' aktif' : '');
+            btn.textContent = kat;
+            btn.onclick = function() {
+                document.querySelectorAll('.sekme').forEach(function(s) { s.classList.remove('aktif'); });
+                btn.classList.add('aktif');
+                menuGoster(kat);
+            };
+            sekmelerDiv.appendChild(btn);
+        });
+        if (kategoriler.length > 0) menuGoster(kategoriler[0]);
+    }
+
+    function menuGoster(kategori) {
+        var liste = document.getElementById('menuListesi');
+        liste.innerHTML = '';
+        menu[kategori].forEach(function(item) {
+            var fiyatSayi = parseInt(item.fiyat.replace(/[^0-9]/g, ''));
+            var div = document.createElement('div');
+            div.className = 'menu-item';
+            div.innerHTML =
+                '<div class="menu-item-sol">' +
+                    '<div class="menu-item-ad">' + item.ad + '</div>' +
+                    '<div class="menu-item-aciklama">' + item.aciklama + '</div>' +
+                '</div>' +
+                '<div class="menu-item-sag">' +
+                    '<div class="menu-item-fiyat">' + item.fiyat + '</div>' +
+                    '<button class="ekle-btn" onclick="sepeteEkle(\'' + item.ad.replace(/'/g, '') + '\',' + fiyatSayi + ')">+</button>' +
+                '</div>';
+            liste.appendChild(div);
+        });
+    }
+
+    function sepeteEkle(ad, fiyat) {
+        if (sepet[ad]) { sepet[ad].adet++; }
+        else { sepet[ad] = { fiyat: fiyat, adet: 1 }; }
+        sepetGuncelle();
+    }
+
+    function sepetGuncelle() {
+        var toplam = 0; var adet = 0;
+        Object.keys(sepet).forEach(function(ad) {
+            toplam += sepet[ad].fiyat * sepet[ad].adet;
+            adet += sepet[ad].adet;
+        });
+        document.getElementById('sepetAdet').textContent = adet + ' ürün';
+        document.getElementById('sepetToplam').textContent = toplam + ' ₺';
+        document.getElementById('modalToplam').textContent = toplam + ' ₺';
+        if (adet > 0) { document.getElementById('sepetBar').classList.add('goster'); }
+        else { document.getElementById('sepetBar').classList.remove('goster'); }
+    }
+
+    function sepetAc() {
+        var icerik = document.getElementById('sepetIcerik');
+        icerik.innerHTML = '';
+        Object.keys(sepet).forEach(function(ad) {
+            var item = sepet[ad];
+            var div = document.createElement('div');
+            div.className = 'sepet-item';
+            div.innerHTML =
+                '<div>' +
+                    '<div class="sepet-item-ad">' + ad + '</div>' +
+                    '<div class="sepet-item-fiyat">' + item.fiyat + ' ₺</div>' +
+                '</div>' +
+                '<div class="adet-kontrol">' +
+                    '<button class="adet-btn" onclick="adetAzalt(\'' + ad + '\')">−</button>' +
+                    '<span class="adet-sayi">' + item.adet + '</span>' +
+                    '<button class="adet-btn" onclick="adetArtir(\'' + ad + '\')">+</button>' +
+                '</div>';
+            icerik.appendChild(div);
+        });
+        document.getElementById('modalOverlay').classList.add('goster');
+    }
+
+    function sepetKapat() { document.getElementById('modalOverlay').classList.remove('goster'); }
+    function adetArtir(ad) { sepet[ad].adet++; sepetGuncelle(); sepetAc(); }
+    function adetAzalt(ad) {
+        sepet[ad].adet--;
+        if (sepet[ad].adet <= 0) delete sepet[ad];
+        sepetGuncelle();
+        if (Object.keys(sepet).length > 0) { sepetAc(); }
+        else { sepetKapat(); }
+    }
+
+    function sepetOzeti() {
+        var satirlar = []; var toplam = 0;
+        Object.keys(sepet).forEach(function(ad) {
+            satirlar.push(ad + ' x' + sepet[ad].adet + ' (' + (sepet[ad].fiyat * sepet[ad].adet) + '₺)');
+            toplam += sepet[ad].fiyat * sepet[ad].adet;
+        });
+        return { satirlar: satirlar, toplam: toplam };
+    }
+
+    function afiyetGoster() {
+        var renkler = ['#e8a838', '#4caf50', '#7c9fd4', '#e55', '#fff'];
+        for (var i = 0; i < 40; i++) {
+            (function(i) {
+                setTimeout(function() {
+                    var k = document.createElement('div');
+                    k.className = 'konfeti';
+                    k.style.left = Math.random() * 100 + 'vw';
+                    k.style.top = '-20px';
+                    k.style.background = renkler[Math.floor(Math.random() * renkler.length)];
+                    k.style.animationDuration = (1.5 + Math.random()) + 's';
+                    k.style.width = (8 + Math.random() * 8) + 'px';
+                    k.style.height = (8 + Math.random() * 8) + 'px';
+                    document.body.appendChild(k);
+                    setTimeout(function() { k.remove(); }, 3000);
+                }, i * 50);
+            })(i);
+        }
+        document.getElementById('afiyetOverlay').classList.add('aktif');
+        setTimeout(function() {
+            document.getElementById('afiyetOverlay').classList.remove('aktif');
+            setTimeout(function() { anketAc(); }, 500);
+        }, 4000);
+    }
+
+    function siparisGoster() {
+        document.getElementById('siparisOverlay').classList.add('aktif');
+        setTimeout(function() { document.getElementById('siparisOverlay').classList.remove('aktif'); }, 3000);
+    }
+
+    function toastGoster() {
+        var toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 2500);
+    }
+
+    function yildizSec(sayi) {
+        seciliYildiz = sayi;
+        document.querySelectorAll('.yildiz').forEach(function(y, i) {
+            if (i < sayi) { y.classList.add('aktif'); }
+            else { y.classList.remove('aktif'); }
+        });
+    }
+
+    function anketAc() {
+        seciliYildiz = 0;
+        document.querySelectorAll('.yildiz').forEach(function(y) { y.classList.remove('aktif'); });
+        document.getElementById('anketOverlay').classList.add('aktif');
+    }
+
+    function anketKapat() {
+        document.getElementById('anketOverlay').classList.remove('aktif');
+    }
+
+    function anketGonder() {
+        if (seciliYildiz === 0) { alert('Lütfen bir yıldız seçin!'); return; }
+        fetch('/api/anket', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ puan: seciliYildiz, masa: masaNo })
+        }).then(function() { anketKapat(); });
+    }
+
+    document.getElementById('btnGarson').addEventListener('click', function() {
+        socket.emit('masa-bildirimi', { masa: 'Masa ' + masaNo, mesaj: 'Garson Çağırıyor', sepet: [], toplam: 0 });
+        toastGoster();
+    });
+
+    document.getElementById('btnSiparis').addEventListener('click', function() {
+        var ozet = sepetOzeti();
+        if (ozet.satirlar.length === 0) { alert('Sepetiniz boş!'); return; }
+        socket.emit('masa-bildirimi', { masa: 'Masa ' + masaNo, mesaj: 'Sipariş Verdi', sepet: ozet.satirlar, toplam: ozet.toplam });
+        sepet = {};
+        sepetGuncelle();
+        sepetKapat();
+        siparisGoster();
+    });
+
+    document.getElementById('btnNakit').addEventListener('click', function() {
+        var ozet = sepetOzeti();
+        socket.emit('masa-bildirimi', { masa: 'Masa ' + masaNo, mesaj: 'Hesap İstiyor - Nakit', sepet: ozet.satirlar, toplam: ozet.toplam });
+        sepetKapat();
+        afiyetGoster();
+    });
+
+    document.getElementById('btnKart').addEventListener('click', function() {
+        var ozet = sepetOzeti();
+        socket.emit('masa-bildirimi', { masa: 'Masa ' + masaNo, mesaj: 'Hesap İstiyor - Kart', sepet: ozet.satirlar, toplam: ozet.toplam });
+        sepetKapat();
+        afiyetGoster();
+    });
+
+    fetch('/api/menu')
+        .then(function(r) { return r.json(); })
+        .then(function(data) { menuRender(data); });
+
+    socket.on('menu-guncellendi', function(yeniMenu) { menuRender(yeniMenu); });
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+    }
+</script>
+
+</body>
+</html>

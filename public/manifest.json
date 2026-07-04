@@ -1,0 +1,22 @@
+{
+  "name": "QR Menü",
+  "short_name": "QR Menü",
+  "description": "Restoran QR Menü Sistemi",
+  "start_url": "/masa.html",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#e8a838",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/e8a838/0f0f0f?text=QR",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/e8a838/0f0f0f?text=QR",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

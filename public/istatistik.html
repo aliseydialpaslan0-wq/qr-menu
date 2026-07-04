@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstatistikler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f0f0f; color: #fff; min-height: 100vh; padding: 24px; }
+        header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #1f1f1f; }
+        header h1 { font-size: 22px; font-weight: 700; }
+        header p { font-size: 13px; color: #555; margin-top: 2px; }
+        .gun-secici { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; }
+        .gun-btn { padding: 8px 16px; border-radius: 50px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #666; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Inter', sans-serif; }
+        .gun-btn.aktif { background: #e8a838; color: #0f0f0f; border-color: #e8a838; }
+        .kartlar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px; }
+        .kartlar3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+        .kart { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 20px 16px; text-align: center; }
+        .kart .ikon { font-size: 24px; margin-bottom: 8px; }
+        .kart .sayi { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+        .kart .etiket { font-size: 11px; color: #555; }
+        .kart.nakit-tutar .sayi { color: #4caf50; }
+        .kart.kart-tutar .sayi { color: #7c9fd4; }
+        .kart.toplam-tutar .sayi { color: #e8a838; }
+        .kart.garson .sayi { color: #e8a838; }
+        .kart.nakit .sayi { color: #4caf50; }
+        .kart.kart-tip .sayi { color: #7c9fd4; }
+        .kart.anket .sayi { color: #f4c842; }
+        .grafik-kapsam { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+        .baslik { font-size: 14px; font-weight: 600; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+        .grafik { display: flex; align-items: flex-end; gap: 6px; height: 120px; }
+        .grafik-sutun { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+        .grafik-bar { width: 100%; background: #e8a838; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.5s ease; }
+        .grafik-etiket { font-size: 10px; color: #444; }
+        .yildiz-bar { display: flex; flex-direction: column; gap: 8px; }
+        .yildiz-satir { display: flex; align-items: center; gap: 10px; }
+        .yildiz-etiket { font-size: 13px; color: #888; min-width: 24px; }
+        .yildiz-dolgu { height: 8px; background: #f4c842; border-radius: 4px; transition: width 0.5s ease; }
+        .yildiz-dolgu-bg { flex: 1; background: #222; border-radius: 4px; overflow: hidden; }
+        .yildiz-sayi { font-size: 12px; color: #555; min-width: 20px; text-align: right; }
+        .bos { text-align: center; color: #333; font-size: 14px; padding: 40px; }
+        .bos span { display: block; font-size: 40px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>📊 İstatistikler</h1>
+        <p>Günlük çağrı, ciro ve memnuniyet</p>
+    </div>
+</header>
+
+<div class="gun-secici" id="gunSecici"></div>
+
+<div class="kartlar">
+    <div class="kart nakit-tutar">
+        <div class="ikon">💵</div>
+        <div class="sayi" id="nakitTutar">0 ₺</div>
+        <div class="etiket">Nakit Ciro</div>
+    </div>
+    <div class="kart kart-tutar">
+        <div class="ikon">💳</div>
+        <div class="sayi" id="kartTutar">0 ₺</div>
+        <div class="etiket">Kart Ciro</div>
+    </div>
+</div>
+
+<div class="kartlar">
+    <div class="kart toplam-tutar">
+        <div class="ikon">💰</div>
+        <div class="sayi" id="toplamTutar">0 ₺</div>
+        <div class="etiket">Toplam Ciro</div>
+    </div>
+    <div class="kart anket">
+        <div class="ikon">⭐</div>
+        <div class="sayi" id="anketOrtalama">-</div>
+        <div class="etiket">Ortalama Puan</div>
+    </div>
+</div>
+
+<div class="kartlar3">
+    <div class="kart garson">
+        <div class="ikon">🔔</div>
+        <div class="sayi" id="garsonSayi">0</div>
+        <div class="etiket">Garson Çağrısı</div>
+    </div>
+    <div class="kart nakit">
+        <div class="ikon">💵</div>
+        <div class="sayi" id="nakitSayi">0</div>
+        <div class="etiket">Nakit Hesap</div>
+    </div>
+    <div class="kart kart-tip">
+        <div class="ikon">💳</div>
+        <div class="sayi" id="kartSayi">0</div>
+        <div class="etiket">Kart Hesap</div>
+    </div>
+</div>
+
+<div class="grafik-kapsam">
+    <div class="baslik">Saatlik Yoğunluk</div>
+    <div class="grafik" id="grafik"></div>
+</div>
+
+<div class="grafik-kapsam">
+    <div class="baslik">Memnuniyet Dağılımı</div>
+    <div class="yildiz-bar" id="yildizBar">
+        <div class="bos"><span>⭐</span>Henüz anket yok</div>
+    </div>
+</div>
+
+<script>
+    var istatistik = {};
+    var seciliGun = '';
+
+    function yukle() {
+        fetch('/api/istatistik')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                istatistik = data;
+                var gunler = Object.keys(data).reverse();
+
+                if (gunler.length === 0) {
+                    document.getElementById('gunSecici').innerHTML = '<div class="bos"><span>📭</span>Henüz veri yok</div>';
+                    return;
+                }
+
+                var secici = document.getElementById('gunSecici');
+                secici.innerHTML = '';
+                gunler.forEach(function(gun, i) {
+                    var btn = document.createElement('button');
+                    btn.className = 'gun-btn' + ((gun === seciliGun || (i === 0 && !seciliGun)) ? ' aktif' : '');
+                    btn.textContent = gun;
+                    btn.onclick = function() {
+                        document.querySelectorAll('.gun-btn').forEach(function(b) { b.classList.remove('aktif'); });
+                        btn.classList.add('aktif');
+                        goster(gun);
+                    };
+                    secici.appendChild(btn);
+                });
+
+                if (!seciliGun) seciliGun = gunler[0];
+                if (istatistik[seciliGun]) goster(seciliGun);
+            });
+    }
+
+    function goster(gun) {
+        seciliGun = gun;
+        var veri = istatistik[gun];
+
+        var nakitTutar = veri.nakitToplam || 0;
+        var kartTutar = veri.kartToplam || 0;
+        document.getElementById('nakitTutar').textContent = nakitTutar + ' ₺';
+        document.getElementById('kartTutar').textContent = kartTutar + ' ₺';
+        document.getElementById('toplamTutar').textContent = (nakitTutar + kartTutar) + ' ₺';
+        document.getElementById('garsonSayi').textContent = veri.garson || 0;
+        document.getElementById('nakitSayi').textContent = veri.nakit || 0;
+        document.getElementById('kartSayi').textContent = veri.kart || 0;
+
+        // Anket
+        var anketler = veri.anketler || [];
+        if (anketler.length > 0) {
+            var toplam = anketler.reduce(function(t, a) { return t + a.puan; }, 0);
+            var ortalama = (toplam / anketler.length).toFixed(1);
+            document.getElementById('anketOrtalama').textContent = ortalama + ' ⭐';
+
+            var dagilim = [0, 0, 0, 0, 0];
+            anketler.forEach(function(a) { dagilim[a.puan - 1]++; });
+            var maks = Math.max.apply(null, dagilim.concat([1]));
+
+            var bar = document.getElementById('yildizBar');
+            bar.innerHTML = '';
+            for (var i = 4; i >= 0; i--) {
+                var satir = document.createElement('div');
+                satir.className = 'yildiz-satir';
+                satir.innerHTML =
+                    '<div class="yildiz-etiket">' + (i + 1) + '⭐</div>' +
+                    '<div class="yildiz-dolgu-bg">' +
+                        '<div class="yildiz-dolgu" style="width:' + (dagilim[i] / maks * 100) + '%"></div>' +
+                    '</div>' +
+                    '<div class="yildiz-sayi">' + dagilim[i] + '</div>';
+                bar.appendChild(satir);
+            }
+        } else {
+            document.getElementById('anketOrtalama').textContent = '-';
+            document.getElementById('yildizBar').innerHTML = '<div class="bos"><span>⭐</span>Henüz anket yok</div>';
+        }
+
+        // Grafik
+        var grafik = document.getElementById('grafik');
+        grafik.innerHTML = '';
+        var saatlik = veri.saatlik || {};
+        var maks2 = Math.max.apply(null, Object.values(saatlik).concat([1]));
+        for (var s = 8; s <= 23; s++) {
+            var deger = saatlik[s] || 0;
+            var sutun = document.createElement('div');
+            sutun.className = 'grafik-sutun';
+            sutun.innerHTML = '<div class="grafik-bar" style="height:' + (deger / maks2 * 100) + '%"></div><div class="grafik-etiket">' + s + '</div>';
+            grafik.appendChild(sutun);
+        }
+    }
+
+    yukle();
+    setInterval(yukle, 5000);
+</script>
+
+</body>
+</html>
